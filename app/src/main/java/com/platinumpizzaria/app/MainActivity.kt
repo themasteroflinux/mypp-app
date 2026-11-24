@@ -2,11 +2,12 @@ package com.platinumpizzaria.app
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +27,9 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -104,6 +108,13 @@ private fun PlatinumHome(context: Context) {
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
     var refresh by remember { mutableIntStateOf(0) }
+    var activePage by remember { mutableStateOf<String?>(null) }
+    var browser by remember { mutableStateOf<WebView?>(null) }
+
+    BackHandler(enabled = activePage != null) {
+        val view = browser
+        if (view != null && view.canGoBack()) view.goBack() else activePage = null
+    }
 
     fun launchRequest(block: suspend () -> Unit) {
         scope.launch {
@@ -169,7 +180,7 @@ private fun PlatinumHome(context: Context) {
                 Spacer(Modifier.height(12.dp))
                 Text(member?.email.orEmpty(), color = Color(0xFF68727A), fontSize = 13.sp)
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = { openPage(context, "$WEBSITE/order.html") },
+                Button(onClick = { activePage = "$WEBSITE/order.html"; browser = null },
                     modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(16.dp)) {
                     Icon(Icons.Default.LocalPizza, contentDescription = null)
                     Spacer(Modifier.width(9.dp))
@@ -178,7 +189,7 @@ private fun PlatinumHome(context: Context) {
                     Icon(Icons.Default.ArrowForward, contentDescription = null)
                 }
                 Spacer(Modifier.height(10.dp))
-                OutlinedButton(onClick = { openPage(context, "$WEBSITE/menu.html") },
+                OutlinedButton(onClick = { activePage = "$WEBSITE/menu.html"; browser = null },
                     modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(16.dp)) {
                     Icon(Icons.Default.MenuBook, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
@@ -239,9 +250,47 @@ private fun PlatinumHome(context: Context) {
             Text("Freshly made. Always platinum.", color = Color(0xFF899198), fontSize = 12.sp)
             Spacer(Modifier.height(24.dp))
         }
-    }
-}
 
-private fun openPage(context: Context, url: String) {
-    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        if (activePage != null) {
+            Column(Modifier.fillMaxSize().background(Color(0xFFF1F3F4))) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().background(Color(0xFF202A33)).padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        val view = browser
+                        if (view != null && view.canGoBack()) view.goBack() else activePage = null
+                    }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    }
+                    Text(
+                        if (activePage?.endsWith("menu.html") == true) "Menu" else "Order",
+                        color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp
+                    )
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { browser?.reload() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Reload", tint = Color.White)
+                    }
+                }
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { viewContext ->
+                        WebView(viewContext).apply {
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            settings.javaScriptCanOpenWindowsAutomatically = true
+                            webViewClient = WebViewClient()
+                            webChromeClient = WebChromeClient()
+                            browser = this
+                            loadUrl(activePage!!)
+                        }
+                    },
+                    update = { view ->
+                        browser = view
+                        if (view.url != activePage) view.loadUrl(activePage!!)
+                    }
+                )
+            }
+        }
+    }
 }
