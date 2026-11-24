@@ -35,6 +35,11 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Get Platinum Pizzaria app icon
+        run: |
+          mkdir -p app/src/main/res/drawable
+          curl -fsSL https://raw.githubusercontent.com/themasteroflinux/platinum-pizzaria/main/fav.png -o app/src/main/res/drawable/fav.png
+
       - name: Build APK
         run: gradle --no-daemon assembleDebug
 
