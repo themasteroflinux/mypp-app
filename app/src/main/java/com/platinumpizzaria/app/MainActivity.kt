@@ -36,7 +36,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 private const val SUPABASE_URL = "https://rrpnmxucqlpaaueufsmb.supabase.co"
-private const val SUPABASE_KEY = "sb_publishable_scPdBcRV7V0X_NV1IaZPsw_BxxCvxmN"
+private const val SUPABASE_KEY = "sb_publishable_scPdBcRV7V0X_VN1IaZPsw_BxxCvxmN"
 private const val WEBSITE = "https://platinum-pizzaria.pages.dev"
 private const val TALER_BACKEND = "https://backend.demo.taler.net/instances/sandbox"
 private val http = OkHttpClient()
