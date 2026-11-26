@@ -38,7 +38,7 @@ import java.io.IOException
 private const val SUPABASE_URL = "https://rrpnmxucqlpaaueufsmb.supabase.co"
 private const val SUPABASE_KEY = "sb_publishable_scPdBcRV7V0X_VN1IaZPsw_BxxCvxmN"
 private const val WEBSITE = "https://platinum-pizzaria.pages.dev"
-private const val TALER_BACKEND = "https://raspberrypi.tail1b64ba.ts.net/instances/default"
+private const val TALER_BACKEND = "https://raspberrypi.tail1b64ba.ts.net"
 private val http = OkHttpClient()
 private val silver = Color(0xFFC1C6C8)
 private val ink = Color(0xFF111820)
